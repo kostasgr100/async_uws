@@ -20,7 +20,7 @@ impl<const SSL: bool> BodyReader<SSL> {
         response.on_data(move |chunk, end| {
             let chunk = chunk.to_vec();
             let sink = sink.clone();
-            tokio::spawn(async move {
+            tokio_uring::spawn(async move {
                 let res = sink.send_timeout((chunk, end), Duration::from_millis(50))
                     .await;
                 if let Err(e) = res {
