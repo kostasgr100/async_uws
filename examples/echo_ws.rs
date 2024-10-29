@@ -20,29 +20,29 @@ fn main() {
             ssl_prefer_low_memory_usage: None,
         };
 
-    let mut app = App::new(opts, None);
-    let compressor: u32 = CompressOptions::SharedCompressor.into();
-    let decompressor: u32 = CompressOptions::SharedDecompressor.into();
-    let route_settings = WsRouteSettings {
-        compression: Some(compressor | decompressor),
-        max_payload_length: Some(1024),
-        idle_timeout: Some(800),
-        max_backpressure: Some(10),
-        close_on_backpressure_limit: Some(false),
-        reset_idle_timeout_on_send: Some(true),
-        send_pings_automatically: Some(true),
-        max_lifetime: Some(111),
-    };
+        let mut app = App::new(opts, None);
+        let compressor: u32 = CompressOptions::SharedCompressor.into();
+        let decompressor: u32 = CompressOptions::SharedDecompressor.into();
+        let route_settings = WsRouteSettings {
+            compression: Some(compressor | decompressor),
+            max_payload_length: Some(1024),
+            idle_timeout: Some(800),
+            max_backpressure: Some(10),
+            close_on_backpressure_limit: Some(false),
+            reset_idle_timeout_on_send: Some(true),
+            send_pings_automatically: Some(true),
+            max_lifetime: Some(111),
+        };
 
-    app.ws(
-        "/",
-        route_settings.clone(),
-        handler_ws,
-        HttpConnection::default_upgrade,
-    )
-    .listen(9001, None::<fn(ListenSocket)>)
-    .run();
-    println!("Server exiting");
+        app.ws(
+            "/",
+            route_settings.clone(),
+            handler_ws,
+            HttpConnection::default_upgrade,
+        )
+        .listen(9001, None::<fn(ListenSocket)>)
+        .run();
+        println!("Server exiting");
 }
 
 async fn handler_ws(mut ws: Websocket<false>) {
