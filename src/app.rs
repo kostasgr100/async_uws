@@ -204,7 +204,7 @@ impl<const SSL: bool> AppStruct<SSL> {
     ) -> &mut Self {
         let shutdown_stream = self.shutdown_stream.take();
         let native = self.native_app.get_native_app();
-        tokio::spawn(async move {
+        tokio_uring::spawn(async move {
             if let Some(stream) = shutdown_stream {
                 let _ = stream.await;
                 app_close::<SSL>(native);
@@ -246,7 +246,7 @@ where
             None
         };
 
-        tokio::spawn(async move {
+        tokio_uring::spawn(async move {
             let res = HttpConnection::new(
                 res,
                 uws_loop,
