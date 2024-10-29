@@ -8,17 +8,17 @@ use async_uws::websocket::Websocket;
 use async_uws::ws_behavior::WsRouteSettings;
 use async_uws::ws_message::WsMessage;
 
-#[tokio::main]
-async fn main() {
-    let opts = UsSocketContextOptions {
-        key_file_name: None,
-        cert_file_name: None,
-        passphrase: None,
-        dh_params_file_name: None,
-        ca_file_name: None,
-        ssl_ciphers: None,
-        ssl_prefer_low_memory_usage: None,
-    };
+fn main() {
+    tokio_uring::start(async {
+        let opts = UsSocketContextOptions {
+            key_file_name: None,
+            cert_file_name: None,
+            passphrase: None,
+            dh_params_file_name: None,
+            ca_file_name: None,
+            ssl_ciphers: None,
+            ssl_prefer_low_memory_usage: None,
+        };
 
     let mut app = App::new(opts, None);
     let compressor: u32 = CompressOptions::SharedCompressor.into();
