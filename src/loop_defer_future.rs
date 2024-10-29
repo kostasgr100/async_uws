@@ -29,7 +29,7 @@ impl LoopDeferFuture {
       }
     };
 
-    tokio::spawn(async move {
+    tokio_uring::spawn(async move {
       loop_defer(uws_loop, closure);
     });
 
