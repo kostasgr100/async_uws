@@ -13,56 +13,57 @@ struct SharedData {
     pub data: String,
 }
 
-#[tokio::main]
-async fn main() {
-    let opts = UsSocketContextOptions {
-        key_file_name: None,
-        cert_file_name: None,
-        passphrase: None,
-        dh_params_file_name: None,
-        ca_file_name: None,
-        ssl_ciphers: None,
-        ssl_prefer_low_memory_usage: None,
-    };
+fn main() {
+    tokio_uring::start(async {
+        let opts = UsSocketContextOptions {
+            key_file_name: None,
+            cert_file_name: None,
+            passphrase: None,
+            dh_params_file_name: None,
+            ca_file_name: None,
+            ssl_ciphers: None,
+            ssl_prefer_low_memory_usage: None,
+        };
 
-    let shared_data = SharedData {
-        data: "String containing data".to_string(),
-    };
+        let shared_data = SharedData {
+            data: "String containing data".to_string(),
+        };
 
-    let (sink, stream) = oneshot::channel::<()>();
-    let (b_sink, mut b_stream) = broadcast::channel::<()>(1);
-    tokio::spawn(async move {
-        let _ = b_stream.recv().await;
-        sink.send(()).unwrap();
+        let (sink, stream) = oneshot::channel::<()>();
+        let (b_sink, mut b_stream) = broadcast::channel::<()>(1);
+        tokio_uring::spawn(async move {
+            let _ = b_stream.recv().await;
+            sink.send(()).unwrap();
+        });
+        let mut app = App::new(opts, Some(stream));
+        app.data(shared_data);
+        app.data(b_sink);
+
+        app.get("/get", get_handler)
+            .post("/post", post_handler)
+            .post("/post/stream", body_stream)
+            .get(
+                "/closure",
+                move |res: HttpConnection<false>, _req: HttpRequest| async {
+                    println!("Closure Handler started");
+                    sleep(Duration::from_secs(1)).await;
+                    println!("Closure Ready to respond");
+                    res.end(
+                        Some("Closure it's the response".to_string().into_bytes()),
+                        true,
+                    )
+                    .await;
+                },
+            )
+            .listen(
+                3001,
+                Some(|listen_socket| {
+                    println!("{listen_socket:#?}");
+                }),
+            )
+            .run();
+        println!("Server exiting");
     });
-    let mut app = App::new(opts, Some(stream));
-    app.data(shared_data);
-    app.data(b_sink);
-
-    app.get("/get", get_handler)
-        .post("/post", post_handler)
-        .post("/post/stream", body_stream)
-        .get(
-            "/closure",
-            move |res: HttpConnection<false>, _req: HttpRequest| async {
-                println!("Closure Handler started");
-                sleep(Duration::from_secs(1)).await;
-                println!("Closure Ready to respond");
-                res.end(
-                    Some("Closure it's the response".to_string().into_bytes()),
-                    true,
-                )
-                .await;
-            },
-        )
-        .listen(
-            3001,
-            Some(|listen_socket| {
-                println!("{listen_socket:#?}");
-            }),
-        )
-        .run();
-    println!("Server exiting");
 }
 
 async fn post_handler(mut res: HttpConnection<false>, _: HttpRequest) {
