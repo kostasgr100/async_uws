@@ -55,7 +55,7 @@ impl<const SSL: bool> Websocket<SSL> {
         let (to_client_sink, mut to_client_stream) = unbounded_channel::<(WsMessage, bool, bool)>();
 
         let uws_loop = self.uws_loop;
-        tokio::spawn(async move {
+        tokio_uring::spawn(async move {
             while let Some((message, compress, fin)) = to_client_stream.recv().await {
                 let websocket = self.native.clone();
 
@@ -155,7 +155,7 @@ impl WebsocketSendFuture {
             }
         };
 
-        tokio::spawn(async move {
+        tokio_uring::spawn(async move {
             loop_defer(uws_loop, closure);
         });
 
