@@ -119,7 +119,7 @@ impl<const SSL: bool> WebsocketBehavior<SSL> {
                 let is_open = user_data.is_open.clone();
                 let data_storage = user_data.shared_data_storage.clone();
                 let per_connection_data_storage = user_data.custom_user_data.clone();
-                tokio::spawn(async move {
+                tokio_uring::spawn(async move {
                     let ws = Websocket::new(
                         ws_connection,
                         uws_loop,
