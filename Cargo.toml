@@ -16,7 +16,8 @@ debug = true
 
 [dependencies]
 uwebsockets_rs = { version = "0.0.11",  features = ["native-access"] }
-tokio = { version = "1.35.1", features = ["full"] }
-log = "0.4.20"
+tokio = { version = "1.40.0", features = ["full"] }
+tokio-uring = "0.5.0"
+log = "0.4.22"
 
 
